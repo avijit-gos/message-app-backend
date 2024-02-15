@@ -10,10 +10,18 @@ const ChatSchema = mongoose.Schema(
     creator: { type: mongoose.Schema.ObjectId, ref: "User" },
     users: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     bio: { type: String, trim: true, default: "" },
+    p_i: { type: String, default: "" },
     type: { type: String, trim: true, default: "" },
     admin: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     block: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
+    pending: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     lastMsg: { type: String, trim: true, default: "" },
+    privacy: {
+      msg: { type: String, default: "all" },
+      join: { type: String, default: "all" },
+      view_mem: { type: String, default: "all" },
+      view_grp_details: { type: String, default: "all" },
+    },
   },
   { timestamps: true }
 );
