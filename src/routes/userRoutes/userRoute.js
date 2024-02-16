@@ -21,7 +21,6 @@ const router = require("express").Router();
 
 router.post("/register", validateRegisterInput, userRegister);
 router.post("/login", validateLoginInput, userLogin);
-
 router.get("/:id", authentication, getProfile);
 router.put("/profile/image", authentication, uploadProfileImage);
 router.put("/update/profile/bio", authentication, updateProfileBio);
