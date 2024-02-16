@@ -98,10 +98,18 @@ class ChatModel {
 
   async handleGetGroups(page, limit, sortType) {
     try {
-      const result = await Chat.find({ type: sortType })
-        .limit(limit)
-        .skip(limit * (page - 1))
-        .sort({ createdAt: -1 });
+      let result = "";
+      if (sortType === "all") {
+        result = await Chat.find()
+          .limit(limit)
+          .skip(limit * (page - 1))
+          .sort({ createdAt: -1 });
+      } else {
+        result = await Chat.find({ type: sortType })
+          .limit(limit)
+          .skip(limit * (page - 1))
+          .sort({ createdAt: -1 });
+      }
       return result;
     } catch (error) {
       throw createError.BadRequest(error.message);
@@ -133,6 +141,99 @@ class ChatModel {
       return { msg: "Profile image successfully updated", result };
     } catch (error) {
       throw createError.BadRequest(error);
+    }
+  }
+
+  async handleJoinGroupRequest(groupId, userId) {
+    try {
+      const group = await Chat.findById(groupId).select("pending");
+      const isPending = group.pending && group.pending.includes(userId);
+      const options = isPending ? "$pull" : "$addToSet";
+      const result = await Chat.findByIdAndUpdate(
+        groupId,
+        { [options]: { pending: userId } },
+        { new: true }
+      );
+      return { msg: "Your joining request has been sent", chat: result };
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleAcceptJoinRequest(groupId, userId) {
+    try {
+      const group = await Chat.findById(groupId).select("pending");
+      const isPending = group.pending && group.pending.includes(userId);
+      const options = isPending ? "$pull" : "$addToSet";
+      await Chat.findByIdAndUpdate(
+        groupId,
+        { [options]: { pending: userId } },
+        { new: true }
+      );
+      const result = await Chat.findByIdAndUpdate(
+        groupId,
+        { $addToSet: { users: userId } },
+        { new: true }
+      );
+      return { msg: "Joining request has been accepted", chat: result };
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleRemoveGroup(groupId, userId) {
+    try {
+      const group = await Chat.findById(groupId).select("admin users");
+      if (group.admin.includes(userId)) {
+        await Chat.findByIdAndUpdate(
+          groupId,
+          { $pull: { admin: userId } },
+          { new: true }
+        );
+      }
+      const result = await Chat.findByIdAndUpdate(
+        groupId,
+        { $pull: { users: userId } },
+        { new: true }
+      );
+      return { msg: "User has been removed from  the group", chat: result };
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleLeaveGroup(groupId, userId) {
+    try {
+      const group = await Chat.findById(groupId).select("admin users");
+      if (group.admin.includes(userId)) {
+        await Chat.findByIdAndUpdate(
+          groupId,
+          { $pull: { admin: userId } },
+          { new: true }
+        );
+      }
+      const result = await Chat.findByIdAndUpdate(
+        groupId,
+        { $pull: { users: userId } },
+        { new: true }
+      );
+      return { msg: "User has been removed from  the group", chat: result };
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleDeleteGroup(groupId, userId) {
+    try {
+      const group = await Chat.findById(groupId).select("creator");
+      if (group.creator.toString() !== userId) {
+        throw createError.BadRequest({ msg: "Invalid creator" });
+      } else {
+        await Chat.findByIdAndDelete(groupId);
+        return { msg: "Group has been deleted" };
+      }
+    } catch (error) {
+      throw createError.BadRequest(error.message);
     }
   }
 }
