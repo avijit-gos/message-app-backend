@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /**
  * eslint-disable no-undef
  *
@@ -10,15 +11,15 @@
  * @format
  */
 
-/** @format */
+/**
+ * eslint-disable no-undef
+ *
+ * @format
+ */
 
 const chai = require("chai");
-const expect = chai.expect;
-const should = chai.should();
 const chaiHttp = require("chai-http");
-const { afterEach, beforeEach } = require("mocha");
 const server = require("../index");
-const User = require("../src/schema/user/userSchema");
 
 chai.use(chaiHttp);
 

@@ -32,8 +32,12 @@ app.use(
 );
 app.use(logger("dev"));
 
+// user route
 app.use("/api/user", require("./src/routes/userRoutes/userRoute"));
+// chat route
 app.use("/api/chat", require("./src/routes/chatRoute/chatRoute"));
+// channel route
+app.use("/api/channel", require("./src/routes/channelRoute/channelRoute"));
 
 app.use(async (req, res, next) => {
   next(createError.NotFound("Page not found"));

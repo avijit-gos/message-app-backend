@@ -110,6 +110,7 @@ class UserController {
       : {};
 
     const users = await User.find(searchTerm)
+      .find({ $ne: { _id: user._id } })
       .find({
         _id: { $ne: user._id },
       })
