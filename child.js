@@ -1,10 +1,3 @@
-/* eslint-disable no-undef */
-/**
- * eslint-disable no-undef
- *
- * @format
- */
-
 /** @format */
 
 const express = require("express");
@@ -15,7 +8,7 @@ const createError = require("http-errors");
 const mongoose = require("mongoose");
 // const db = mongoose.connection;
 mongoose.connect(process.env.DB_URL);
-mongoose.connection;
+mongoose.connection.on("connection", () => console.log("DB connected")); // Corrected event name
 
 const app = express();
 app.use(express.urlencoded({ extended: false }));
