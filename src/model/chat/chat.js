@@ -42,6 +42,8 @@ class ChatModel {
 
   async handleCreateGroupChat(body, user) {
     try {
+      // const members = JSON.parse(body.members);
+      console.log("MEMBERS:", body.members);
       const chatObj = new Chat({
         _id: new mongoose.Types.ObjectId(),
         name: body.name,
@@ -49,6 +51,7 @@ class ChatModel {
         creator: user._id,
         bio: body.bio,
         type: body.type,
+        // users: members,
       });
       const groupChat = await chatObj.save();
       const result = await Chat.findById(groupChat._id).populate({
