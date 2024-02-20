@@ -99,6 +99,7 @@ class UserController {
     }
   }
 
+  /*
   async handleSearchUsers(data, user, page, limit) {
     const searchTerm = data.search
       ? {
@@ -110,14 +111,36 @@ class UserController {
       : {};
 
     const users = await User.find(searchTerm)
-      .find({ $ne: { _id: user._id } })
-      .find({
-        _id: { $ne: user._id },
-      })
+      .find({ _id: { $ne: user._id } })
       .select(["_id", "name", "username", "p_i"])
       .limit(page)
       .skip(limit * (page - 1));
     return users;
+  }
+  */
+
+  async handleSearchUsers(body, user, page, limit) {
+    // console.log(body);
+    try {
+      const searchTerm = body.search
+        ? {
+            $or: [
+              { name: { $regex: body.search, $options: "i" } },
+              { username: { $regex: body.search, $options: "i" } },
+            ],
+          }
+        : {};
+
+      const users = await User.find(searchTerm)
+        .find({ _id: { $ne: user._id } })
+        .select({ _id: 1, name: 1, p_i: 1, username: 1 })
+        .sort({ createdAt: -1 })
+        .skip(limit * (page - 1))
+        .limit(limit);
+      return users;
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
   }
 }
 

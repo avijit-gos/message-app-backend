@@ -14,7 +14,6 @@ const authentication = require("../../middleware/authentication");
 const {
   validateRegisterInput,
   validateLoginInput,
-  validateSearchInput,
 } = require("../../validator/validator");
 
 const router = require("express").Router();
@@ -26,6 +25,6 @@ router.put("/profile/image", authentication, uploadProfileImage);
 router.put("/update/profile/bio", authentication, updateProfileBio);
 router.put("/update/profile/name", authentication, updateProfileName);
 router.put("/update/profile/interest", authentication, updateProfileInterest);
-router.get("/", authentication, validateSearchInput, searchProfile);
+router.get("/", authentication, searchProfile);
 
 module.exports = router;
