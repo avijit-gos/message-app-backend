@@ -42,8 +42,6 @@ class ChatModel {
 
   async handleCreateGroupChat(body, user) {
     try {
-      // const members = JSON.parse(body.members);
-      console.log("MEMBERS:", body.members);
       const chatObj = new Chat({
         _id: new mongoose.Types.ObjectId(),
         name: body.name,
@@ -51,7 +49,7 @@ class ChatModel {
         creator: user._id,
         bio: body.bio,
         type: body.type,
-        // users: members,
+        users: body.members,
       });
       const groupChat = await chatObj.save();
       const result = await Chat.findById(groupChat._id).populate({
@@ -60,6 +58,7 @@ class ChatModel {
       });
       return { msg: "New group has been created", chat: result };
     } catch (error) {
+      console.log(error);
       throw createError.BadRequest(error.message);
     }
   }
@@ -101,18 +100,10 @@ class ChatModel {
 
   async handleGetGroups(page, limit, sortType) {
     try {
-      let result = "";
-      if (sortType === "all") {
-        result = await Chat.find()
-          .limit(limit)
-          .skip(limit * (page - 1))
-          .sort({ createdAt: -1 });
-      } else {
-        result = await Chat.find({ type: sortType })
-          .limit(limit)
-          .skip(limit * (page - 1))
-          .sort({ createdAt: -1 });
-      }
+      let result = await Chat.find({ type: sortType })
+        .limit(limit)
+        .skip(limit * (page - 1))
+        .sort({ createdAt: -1 });
       return result;
     } catch (error) {
       throw createError.BadRequest(error.message);

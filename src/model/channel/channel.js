@@ -44,26 +44,11 @@ class ChannelModel {
 
   async handleGetAllChannels(page, limit, sortType, user) {
     try {
-      if (
-        sortType === "Cricket" ||
-        sortType === "Football" ||
-        sortType === "Education" ||
-        sortType === "Technology"
-      ) {
-        console.log("Others");
-      } else {
-        const result = await Channel.find({
-          $nor: [{ creator: user._id }, { followers: user._id }],
-        })
-          .populate({ path: "lastMsg", select: "content" })
-          .limit(limit)
-          .skip(limit * (page - 1))
-          .sort({ createdAt: -1 })
-          .catch((error) => {
-            throw createError.BadRequest(error.message);
-          });
-        return result;
-      }
+      let result = await Channel.find({ type: sortType })
+        .limit(limit)
+        .skip(limit * (page - 1))
+        .sort({ createdAt: -1 });
+      return result;
     } catch (error) {
       throw createError.BadRequest(error.message);
     }
