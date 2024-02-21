@@ -63,7 +63,7 @@ class ChatController {
     try {
       const page = req.query.page || 1;
       const limit = req.query.limit || 10;
-      const sortType = req.params.sortType || "all";
+      const sortType = req.query.sortType || "all";
       const result = await handleGetGroups(page, limit, sortType);
       return res.status(200).json(result);
     } catch (error) {
