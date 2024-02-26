@@ -2,6 +2,7 @@
 
 const createError = require("http-errors");
 const Chat = require("../../schema/chat/chatSchema");
+const User = require("../../schema/user/userSchema");
 const { default: mongoose } = require("mongoose");
 const { uploadImage } = require("../../helper/helper");
 
@@ -48,7 +49,7 @@ class ChatModel {
         isGroup: body.isGroup,
         creator: user._id,
         bio: body.bio,
-        type: body.type,
+        cat: body.type,
         users: body.members,
       });
       const groupChat = await chatObj.save();
@@ -79,32 +80,30 @@ class ChatModel {
     }
   }
 
-  async handleAddMember(id, body) {
+  async handleGetFullChat(id) {
     try {
-      const group = await Chat.findById(id);
-      const isMember = group.users.includes(body.user);
-      const options = isMember ? "$pull" : "$addToSet";
-
-      const result = await Chat.findByIdAndUpdate(
-        id,
-        {
-          [options]: { users: body.user },
-        },
-        { new: true }
-      );
-      return result;
+      const chat = await Chat.findById(id);
+      if (!chat.isGroup) {
+        const fullData = await chat.populate({
+          path: "users",
+          select: "_id name username p_i",
+        });
+        return fullData;
+      } else {
+        const fullData = await chat.populate({
+          path: "creator",
+          select: "_id name username email p_i",
+        });
+        return fullData;
+      }
     } catch (error) {
       throw createError.BadRequest(error.message);
     }
   }
 
-  async handleGetGroups(page, limit, sortType) {
+  async handleAddMember(id, body) {
     try {
-      let result = await Chat.find({ type: sortType })
-        .limit(limit)
-        .skip(limit * (page - 1))
-        .sort({ createdAt: -1 });
-      return result;
+      console.log(id, body);
     } catch (error) {
       throw createError.BadRequest(error.message);
     }
@@ -117,7 +116,7 @@ class ChatModel {
         { [key]: value },
         { new: true }
       );
-      return { mag: `Group ${key} has been updated.`, group: result };
+      return { msg: `Group ${key} has been updated.`, group: result };
     } catch (error) {
       throw createError.BadRequest(error.message);
     }
@@ -177,20 +176,17 @@ class ChatModel {
 
   async handleRemoveGroup(groupId, userId) {
     try {
-      const group = await Chat.findById(groupId).select("admin users");
-      if (group.admin.includes(userId)) {
-        await Chat.findByIdAndUpdate(
-          groupId,
-          { $pull: { admin: userId } },
-          { new: true }
-        );
-      }
-      const result = await Chat.findByIdAndUpdate(
+      await Chat.findByIdAndUpdate(
         groupId,
         { $pull: { users: userId } },
         { new: true }
       );
-      return { msg: "User has been removed from  the group", chat: result };
+      await Chat.findByIdAndUpdate(
+        groupId,
+        { $pull: { admin: userId } },
+        { new: true }
+      );
+      return { msg: "User has been removed from group" };
     } catch (error) {
       throw createError.BadRequest(error.message);
     }
@@ -226,6 +222,114 @@ class ChatModel {
         await Chat.findByIdAndDelete(groupId);
         return { msg: "Group has been deleted" };
       }
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleGetGroupChats(userId, page, limit) {
+    try {
+      const groups = await Chat.find({
+        $and: [{ creator: { $ne: userId } }, { users: { $ne: userId } }],
+      })
+        .populate({ path: "creator", select: "_id name username p_i" })
+        .limit(limit)
+        .skip(limit * (page - 1))
+        .sort({ createdAt: -1 });
+      return groups;
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleGetSortedGroups(page, limit, sorttype, userId) {
+    try {
+      console.log(page, limit, sorttype, userId);
+      const groups = await Chat.find({
+        $and: [{ creator: { $ne: userId } }, { users: { $ne: userId } }],
+      })
+        .find({ cat: { $eq: sorttype } })
+        .populate({ path: "creator", select: "_id name username p_i" })
+        .limit(limit)
+        .skip(limit * (page - 1))
+        .sort({ createdAt: -1 });
+
+      return groups;
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleGetMembers(id, page, limit) {
+    try {
+      const group = await Chat.findById(id);
+      console.log(group);
+      const members = group.users;
+      const startIndex = limit * (page - 1);
+      const lastIndex = limit * page;
+      const temp = members.splice(startIndex, lastIndex);
+      const users = await User.find({ _id: { $in: temp } }).select({
+        name: 1,
+        _id: 1,
+        username: 1,
+        p_i: 1,
+        mem: 1,
+        badge: 1,
+      });
+      return users;
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleAddAdmin(chatId, userId) {
+    try {
+      const chat = await Chat.findById(chatId).select("admin");
+      const isAdmin = chat.admin && chat.admin.includes(userId);
+      const option = isAdmin ? "$pull" : "$addToSet";
+
+      const update = await Chat.findByIdAndUpdate(
+        chatId,
+        {
+          [option]: { admin: userId },
+        },
+        { new: true }
+      );
+      return {
+        msg: isAdmin ? "Remove from  admin" : "Add as an admin",
+        chat: update,
+      };
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleViewsUsers(chatId, body, page, limit, user) {
+    try {
+      console.log(body.search);
+      const searchTerm = body.search
+        ? {
+            $or: [
+              { name: { $regex: body.search, $options: "i" } },
+              { username: { $regex: body.search, $options: "i" } },
+            ],
+          }
+        : {};
+
+      // Fetch the group members
+      const groupMembers = await Chat.findById(chatId).select("members");
+      const memberIds = groupMembers.members;
+      //  // Exclude users who are members of the group
+
+      // Find users excluding the group members
+      const users = await User.find({ ...searchTerm, _id: { $nin: memberIds } })
+        .find({ _id: { $ne: user._id } })
+        .select({ _id: 1, name: 1, p_i: 1, username: 1 })
+        .sort({ createdAt: -1 })
+        .skip(limit * (page - 1))
+        .limit(limit);
+
+      return users;
     } catch (error) {
       throw createError.BadRequest(error.message);
     }

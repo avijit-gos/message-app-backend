@@ -5,8 +5,8 @@ const {
   createChat,
   createGroupChat,
   getChats,
+  getFullchat,
   addMember,
-  getGroups,
   updateGroupName,
   updateGroupBio,
   updateGroupImage,
@@ -15,6 +15,11 @@ const {
   removeGroup,
   leaveGroup,
   deleteGroup,
+  getGroupChats,
+  getSortedGroups,
+  getMembers,
+  addAdmin,
+  viewUsers,
 } = require("../../controller/chatController/chatController");
 const Authentication = require("../../middleware/authentication");
 const {
@@ -24,8 +29,15 @@ const {
   validateGroupBioInput,
   validateImage,
 } = require("../../validator/validator");
+/***
+ * 
+ * 
 
+
+
+ */
 // routes
+router.get("/sorted-groups", Authentication, getSortedGroups);
 router.post("/", Authentication, validatesingleChatInput, createChat);
 router.post(
   "/create/group",
@@ -34,8 +46,8 @@ router.post(
   createGroupChat
 );
 router.get("/", Authentication, getChats);
+router.get("/:id", Authentication, getFullchat);
 router.put("/add-member/:id", Authentication, addMember);
-router.get("/get-groups", Authentication, getGroups);
 router.put(
   "/update-name/:id",
   Authentication,
@@ -59,4 +71,8 @@ router.put("/accept-join-request/:id", Authentication, acceptJoinRequest);
 router.put("/remove-group/:id", Authentication, removeGroup);
 router.put("/leave-group/:id", Authentication, leaveGroup);
 router.delete("/delete-group/:id", Authentication, deleteGroup);
+router.put("/my-groups", Authentication, getGroupChats);
+router.get("/members/:id", Authentication, getMembers);
+router.put("/add/admin/:id", Authentication, addAdmin);
+router.get("/list-users/:id", Authentication, viewUsers);
 module.exports = router;

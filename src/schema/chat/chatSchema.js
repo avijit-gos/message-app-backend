@@ -11,7 +11,7 @@ const ChatSchema = mongoose.Schema(
     users: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     bio: { type: String, trim: true, default: "" },
     p_i: { type: String, default: "" },
-    type: { type: String, trim: true, default: "" },
+    cat: { type: String, trim: true, default: "" },
     admin: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     block: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     pending: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
