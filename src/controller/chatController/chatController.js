@@ -19,6 +19,7 @@ const {
   handleGetMembers,
   handleAddAdmin,
   handleViewsUsers,
+  handleGetPendingList,
 } = require("../../model/chat/chat");
 
 class ChatController {
@@ -161,7 +162,8 @@ class ChatController {
       } else {
         const result = await handleAcceptJoinRequest(
           req.params.id,
-          req.body.user
+          req.body.user,
+          req.query.isAccept
         );
         return res.status(200).json(result);
       }
@@ -282,6 +284,21 @@ class ChatController {
           limit,
           req.user
         );
+        return res.status(200).json(result);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getPendingList(req, res, next) {
+    try {
+      if (!req.params.id) {
+        throw createError.BadRequest({ msg: "Chat id is not defined" });
+      } else {
+        const page = req.query.page || 1;
+        const limit = req.query.limit || 10;
+        const result = await handleGetPendingList(req.params.id, page, limit);
         return res.status(200).json(result);
       }
     } catch (error) {

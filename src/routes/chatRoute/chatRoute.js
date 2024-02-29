@@ -20,6 +20,7 @@ const {
   getMembers,
   addAdmin,
   viewUsers,
+  getPendingList,
 } = require("../../controller/chatController/chatController");
 const Authentication = require("../../middleware/authentication");
 const {
@@ -75,4 +76,5 @@ router.put("/my-groups", Authentication, getGroupChats);
 router.get("/members/:id", Authentication, getMembers);
 router.put("/add/admin/:id", Authentication, addAdmin);
 router.get("/list-users/:id", Authentication, viewUsers);
+router.get("/pending/:id", Authentication, getPendingList);
 module.exports = router;

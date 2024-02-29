@@ -30,7 +30,7 @@ app.use(
     tempFileDir: "/tmp/",
   })
 );
-app.use(logger("dev"));
+// app.use(logger("dev"));
 
 // user route
 app.use("/api/user", require("./src/routes/userRoutes/userRoute"));
@@ -58,6 +58,33 @@ const port = 8000;
 const server = app.listen(port, () => {
   // eslint-disable-next-line no-undef
   console.log(`Server running on ${port} with PID:${process.pid}`);
+});
+
+const io = require("socket.io")(server, {
+  transports: ["websocket"],
+  pingTimeout: 360000,
+  cors: {
+    origin: "*",
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("Connected with socket.io");
+
+  socket.on("setup", (user) => {
+    socket.join(user._id);
+    socket.emit("connection");
+  });
+
+  socket.on("join chat", (room) => {
+    console.log("Room ID:", room);
+    socket.join(room);
+  });
+
+  socket.on("update chat", (chat) => {
+    console.log("Update chat");
+    socket.emit("updated chat", chat);
+  });
 });
 
 module.exports = server;

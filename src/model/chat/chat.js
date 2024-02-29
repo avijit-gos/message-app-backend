@@ -103,7 +103,15 @@ class ChatModel {
 
   async handleAddMember(id, body) {
     try {
-      console.log(id, body);
+      const usersId = body.user;
+      await Chat.findByIdAndUpdate(
+        id,
+        {
+          $addToSet: { users: { $each: usersId } },
+        },
+        { new: true }
+      );
+      return { msg: "Users are added" };
     } catch (error) {
       throw createError.BadRequest(error.message);
     }
@@ -153,7 +161,7 @@ class ChatModel {
     }
   }
 
-  async handleAcceptJoinRequest(groupId, userId) {
+  async handleAcceptJoinRequest(groupId, userId, isAccept) {
     try {
       const group = await Chat.findById(groupId).select("pending");
       const isPending = group.pending && group.pending.includes(userId);
@@ -163,12 +171,16 @@ class ChatModel {
         { [options]: { pending: userId } },
         { new: true }
       );
-      const result = await Chat.findByIdAndUpdate(
-        groupId,
-        { $addToSet: { users: userId } },
-        { new: true }
-      );
-      return { msg: "Joining request has been accepted", chat: result };
+      console.log(isAccept, typeof isAccept);
+      if (isAccept === "true") {
+        const result = await Chat.findByIdAndUpdate(
+          groupId,
+          { $addToSet: { users: userId } },
+          { new: true }
+        );
+        return { msg: "Joining request has been accepted", chat: result };
+      }
+      return { msg: "Joining request has not been accepted" };
     } catch (error) {
       throw createError.BadRequest(error.message);
     }
@@ -263,7 +275,7 @@ class ChatModel {
   async handleGetMembers(id, page, limit) {
     try {
       const group = await Chat.findById(id);
-      console.log(group);
+      // console.log(group);
       const members = group.users;
       const startIndex = limit * (page - 1);
       const lastIndex = limit * page;
@@ -273,8 +285,6 @@ class ChatModel {
         _id: 1,
         username: 1,
         p_i: 1,
-        mem: 1,
-        badge: 1,
       });
       return users;
     } catch (error) {
@@ -306,7 +316,6 @@ class ChatModel {
 
   async handleViewsUsers(chatId, body, page, limit, user) {
     try {
-      console.log(body.search);
       const searchTerm = body.search
         ? {
             $or: [
@@ -317,8 +326,8 @@ class ChatModel {
         : {};
 
       // Fetch the group members
-      const groupMembers = await Chat.findById(chatId).select("members");
-      const memberIds = groupMembers.members;
+      const groupMembers = await Chat.findById(chatId).select("users");
+      const memberIds = groupMembers.users;
       //  // Exclude users who are members of the group
 
       // Find users excluding the group members
@@ -329,6 +338,26 @@ class ChatModel {
         .skip(limit * (page - 1))
         .limit(limit);
 
+      return users;
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleGetPendingList(id, page, limit) {
+    try {
+      const group = await Chat.findById(id);
+      console.log(group);
+      const members = group.pending;
+      const startIndex = limit * (page - 1);
+      const lastIndex = limit * page;
+      const temp = members.splice(startIndex, lastIndex);
+      const users = await User.find({ _id: { $in: temp } }).select({
+        name: 1,
+        _id: 1,
+        username: 1,
+        p_i: 1,
+      });
       return users;
     } catch (error) {
       throw createError.BadRequest(error.message);
