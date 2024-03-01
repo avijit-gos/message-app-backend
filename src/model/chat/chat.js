@@ -231,8 +231,8 @@ class ChatModel {
       if (group.creator.toString() !== userId) {
         throw createError.BadRequest({ msg: "Invalid creator" });
       } else {
-        await Chat.findByIdAndDelete(groupId);
-        return { msg: "Group has been deleted" };
+        const result = await Chat.findByIdAndDelete(groupId);
+        return { msg: "Group has been deleted", chat: result };
       }
     } catch (error) {
       throw createError.BadRequest(error.message);

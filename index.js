@@ -38,6 +38,8 @@ app.use("/api/user", require("./src/routes/userRoutes/userRoute"));
 app.use("/api/chat", require("./src/routes/chatRoute/chatRoute"));
 // channel route
 app.use("/api/channel", require("./src/routes/channelRoute/channelRoute"));
+// message route
+app.use("/api/message", require("./src/routes/messageRoute/messageRoute"));
 
 app.use(async (req, res, next) => {
   next(createError.NotFound("Page not found"));
@@ -82,8 +84,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("update chat", (chat) => {
-    console.log("Update chat");
+    // console.log("Update chat");
     socket.emit("updated chat", chat);
+  });
+
+  socket.on("join request", (obj) => {
+    // console.log("Pending", obj);
+    socket.to(obj.creator).emit("received new join request", obj);
   });
 });
 
