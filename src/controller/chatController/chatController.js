@@ -5,8 +5,8 @@ const {
   handleCreateChat,
   handleCreateGroupChat,
   handleGetChats,
+  handleGetFullChat,
   handleAddMember,
-  handleGetGroups,
   handleUpdateGroupInfo,
   handleUploadImage,
   handleJoinGroupRequest,
@@ -14,6 +14,12 @@ const {
   handleRemoveGroup,
   handleLeaveGroup,
   handleDeleteGroup,
+  handleGetGroupChats,
+  handleGetSortedGroups,
+  handleGetMembers,
+  handleAddAdmin,
+  handleViewsUsers,
+  handleGetPendingList,
 } = require("../../model/chat/chat");
 
 class ChatController {
@@ -46,6 +52,19 @@ class ChatController {
     }
   }
 
+  async getFullchat(req, res, next) {
+    try {
+      if (!req.params.id) {
+        throw createError.BadRequest("Chat id is not defined");
+      } else {
+        const result = await handleGetFullChat(req.params.id);
+        return res.status(200).json(result);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async addMember(req, res, next) {
     try {
       if (!req.params.id && req.body.user) {
@@ -61,11 +80,12 @@ class ChatController {
 
   async getGroups(req, res, next) {
     try {
-      const page = req.query.page || 1;
-      const limit = req.query.limit || 10;
-      const sortType = req.query.sortType || "all";
-      const result = await handleGetGroups(page, limit, sortType);
-      return res.status(200).json(result);
+      console.log("GET GROUPS");
+      // const page = req.query.page || 1;
+      // const limit = req.query.limit || 10;
+      // const sortType = req.query.sortType || "all";
+      // const result = await handleGetGroups(page, limit, sortType);
+      // return res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -76,6 +96,7 @@ class ChatController {
       if (!req.params.id) {
         throw createError.BadRequest("Group id is not present");
       } else {
+        console.log(req.params.id, req.body.name);
         const result = await handleUpdateGroupInfo(
           "name",
           req.params.id,
@@ -141,7 +162,8 @@ class ChatController {
       } else {
         const result = await handleAcceptJoinRequest(
           req.params.id,
-          req.body.user
+          req.body.user,
+          req.query.isAccept
         );
         return res.status(200).json(result);
       }
@@ -182,6 +204,101 @@ class ChatController {
         throw createError.BadRequest("Group id is invalid");
       } else {
         const result = await handleDeleteGroup(req.params.id, req.user._id);
+        return res.status(200).json(result);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getGroupChats(req, res, next) {
+    try {
+      const page = req.query.page || 1;
+      const limit = req.query.limit || 10;
+      const result = await handleGetGroupChats(req.user._id, page, limit);
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getSortedGroups(req, res, next) {
+    try {
+      console.log("CAME");
+      const page = req.query.page || 1;
+      const limit = req.query.limit || 10;
+      const sorttype = req.query.sorttype || "Education";
+      const result = await handleGetSortedGroups(
+        page,
+        limit,
+        sorttype,
+        req.user._id
+      );
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMembers(req, res, next) {
+    try {
+      if (!req.params.id) {
+        throw createError.BadRequest("Group id is not defined");
+      } else {
+        const page = req.query.page || 1;
+        const limit = req.query.limit || 10;
+
+        const result = await handleGetMembers(req.params.id, page, limit);
+        return res.status(200).json(result);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async addAdmin(req, res, next) {
+    try {
+      if (!req.params.id) {
+        throw createError.BadRequest("group id is not valid");
+      } else {
+        const result = await handleAddAdmin(req.params.id, req.body.user);
+        return res.status(200).json(result);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async viewUsers(req, res, next) {
+    try {
+      if (!req.params.id) {
+        throw createError.BadRequest("group id is not valid");
+      } else {
+        const page = req.query.page || 1;
+        const limit = req.query.limit || 10;
+
+        const result = await handleViewsUsers(
+          req.params.id,
+          req.query,
+          page,
+          limit,
+          req.user
+        );
+        return res.status(200).json(result);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getPendingList(req, res, next) {
+    try {
+      if (!req.params.id) {
+        throw createError.BadRequest({ msg: "Chat id is not defined" });
+      } else {
+        const page = req.query.page || 1;
+        const limit = req.query.limit || 10;
+        const result = await handleGetPendingList(req.params.id, page, limit);
         return res.status(200).json(result);
       }
     } catch (error) {

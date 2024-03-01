@@ -64,7 +64,7 @@ class UserController {
 
   async handleGetUserProfile(id) {
     try {
-      const result = await User.findById(id).select("name username email p_i");
+      const result = await User.findById(id).select("-password");
       return result;
     } catch (error) {
       throw createError.BadRequest(error.message);

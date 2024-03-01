@@ -23,7 +23,7 @@ app.use(
 );
 app.use(logger("dev"));
 
-app.use("/api/user", require("./src/routes/userRoutes/userRoute"));
+app.use("/api/user", require("../src/routes/userRoutes/userRoute"));
 
 app.use(async (req, res, next) => {
   next(createError.NotFound("Page not found"));

@@ -9,7 +9,7 @@ const ChannelSchema = mongoose.Schema(
     creator: { type: mongoose.Schema.ObjectId, ref: "User" },
     bio: { type: String, trim: true, default: "" },
     p_i: { type: String, default: "" },
-    type: { type: String, trim: true, default: "" },
+    cat: { type: String, trim: true, default: "" },
     followers: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     lastMsg: { type: String, trim: true, default: "" },
     privacy: {

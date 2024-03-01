@@ -11,6 +11,7 @@ module.exports = async (req, res, next) => {
     // eslint-disable-next-line no-undef
     const validate = await jwt.verify(token, process.env.SECRET_KEY);
     req.user = validate;
+    // console.log(req.user);
     next();
   } catch (error) {
     next(error);
