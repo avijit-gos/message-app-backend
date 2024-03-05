@@ -5,6 +5,7 @@ const {
   handleCreateMessage,
   handleGetMessage,
   handleUpdateMessage,
+  handlePinMessage,
 } = require("../../model/message/message");
 
 class MessageController {
@@ -54,6 +55,21 @@ class MessageController {
           req.params.id,
           req.body.message
         );
+        return res.status(200).json(result);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async pinnMessage(req, res, next) {
+    try {
+      if (!req.body.chatId.trim()) {
+        throw createError.BadRequest({ msg: "Invalid chat id" });
+      } else if (!req.body.messageId.trim()) {
+        throw createError.BadRequest({ msg: "Invalid message id" });
+      } else {
+        const result = await handlePinMessage(req.body);
         return res.status(200).json(result);
       }
     } catch (error) {

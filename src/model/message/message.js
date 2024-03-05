@@ -2,6 +2,7 @@
 
 const createError = require("http-errors");
 const Message = require("../../schema/messages/messageSchema");
+const Chat = require("../../schema/chat/chatSchema");
 const { uploadImage } = require("../../helper/helper");
 const {
   encryptMessage,
@@ -34,13 +35,7 @@ class MessageModel {
       });
       const result = await newMessage.save();
       await result.populate({ path: "user", select: "_id name p_i" });
-      // if message containes text message then "decryptMessage()" function should call
-      // to decrept message
-      if (body.message.trim()) {
-        const decryptData = await decryptMessage(result.content);
-        result.content = decryptData;
-      }
-      console.log(result);
+      return result;
     } catch (error) {
       throw createError.BadRequest(error.message);
     }
@@ -67,11 +62,37 @@ class MessageModel {
         { $set: { message: encryptMessageData } },
         { new: true }
       );
-      const decryptData = await decryptMessage(update.content);
-      update.content = decryptData;
+      // const decryptData = await decryptMessage(update.content);
+      // update.content = decryptData;
       return { msg: "Message has been updated", message: update };
     } catch (error) {
       throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handlePinMessage(body) {
+    try {
+      const chatData = await Chat.findById(body.chatId).select("pin");
+      const isPinned = chatData.pin && chatData.pin.includes(body.messageId);
+      const option = isPinned ? "$pull" : "$addToSet";
+      await Chat.findByIdAndUpdate(
+        body.chatId,
+        {
+          [option]: { pin: body.messageId },
+        },
+        { new: true }
+      );
+      const result = await Message.findByIdAndUpdate(
+        body.messageId,
+        { $set: { pin: !isPinned } },
+        { new: true }
+      );
+      return {
+        msg: isPinned ? "Unpinned this message" : "Pinned this message",
+        message: result,
+      };
+    } catch (error) {
+      throw createError.BadRequest({ msg: error.message });
     }
   }
 }

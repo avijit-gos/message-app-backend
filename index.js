@@ -79,8 +79,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join chat", (room) => {
-    console.log("Room ID:", room);
-    socket.join(room);
+    // console.log("Joined room ID:", room);
+    socket.join(room.message);
   });
 
   socket.on("update chat", (chat) => {
@@ -91,6 +91,19 @@ io.on("connection", (socket) => {
   socket.on("join request", (obj) => {
     // console.log("Pending", obj);
     socket.to(obj.creator).emit("received new join request", obj);
+  });
+
+  socket.on("new message", (message) => {
+    console.log("message:", message);
+  });
+
+  socket.on("pinned message", (data) => {
+    socket.to(data.chat).emit("update pin message", data);
+  });
+
+  // "update message"
+  socket.on("update message", (data) => {
+    socket.to(data.chat).emit("sent update message", data);
   });
 });
 
