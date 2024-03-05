@@ -13,6 +13,7 @@ const ChatSchema = mongoose.Schema(
     p_i: { type: String, default: "" },
     cat: { type: String, trim: true, default: "" },
     admin: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
+    pin: [{ type: mongoose.Schema.ObjectId, ref: "Chat" }],
     block: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     pending: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     lastMsg: { type: String, trim: true, default: "" },
