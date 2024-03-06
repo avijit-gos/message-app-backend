@@ -14,7 +14,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const logger = require("morgan");
+// const logger = require("morgan");
 const fileUploader = require("express-fileupload");
 const createError = require("http-errors");
 require("./src/database/mongoDB");
@@ -103,7 +103,16 @@ io.on("connection", (socket) => {
 
   // "update message"
   socket.on("update message", (data) => {
+    // console.log("Update message");
     socket.to(data.chat).emit("sent update message", data);
+  });
+
+  socket.on("delete message", (data) => {
+    socket.to(data.chat).emit("sent deleted message", data);
+  });
+
+  socket.on("like message", (data) => {
+    socket.to(data.chat).emit("sent liked message", data);
   });
 });
 

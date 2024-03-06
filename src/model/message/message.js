@@ -4,10 +4,7 @@ const createError = require("http-errors");
 const Message = require("../../schema/messages/messageSchema");
 const Chat = require("../../schema/chat/chatSchema");
 const { uploadImage } = require("../../helper/helper");
-const {
-  encryptMessage,
-  decryptMessage,
-} = require("../../encrypt-decrypt/encrypt");
+const { encryptMessage } = require("../../encrypt-decrypt/encrypt");
 const { default: mongoose } = require("mongoose");
 
 class MessageModel {
@@ -57,13 +54,12 @@ class MessageModel {
   async handleUpdateMessage(id, message) {
     try {
       const encryptMessageData = await encryptMessage(message);
+
       const update = await Message.findByIdAndUpdate(
         id,
-        { $set: { message: encryptMessageData } },
+        { $set: { content: encryptMessageData } },
         { new: true }
       );
-      // const decryptData = await decryptMessage(update.content);
-      // update.content = decryptData;
       return { msg: "Message has been updated", message: update };
     } catch (error) {
       throw createError.BadRequest(error.message);
@@ -93,6 +89,36 @@ class MessageModel {
       };
     } catch (error) {
       throw createError.BadRequest({ msg: error.message });
+    }
+  }
+
+  async handleLikeMessage(id, user) {
+    try {
+      const message = await Message.findById(id);
+      const isLiked = message.likes && message.likes.includes(user._id);
+      const option = isLiked ? "$pull" : "$addToSet";
+      const result = await Message.findByIdAndUpdate(
+        id,
+        { [option]: { likes: user._id } },
+        { new: true }
+      );
+      return {
+        msg: isLiked ? "Removed like" : "Liked message",
+        message: result,
+      };
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleDeleteMessage(id) {
+    try {
+      console.log(id);
+      const result = await Message.findByIdAndDelete(id);
+      // console.log(result);
+      return { msg: "Message has been deleted", message: result };
+    } catch (error) {
+      throw createError.BadRequest(error.message);
     }
   }
 }

@@ -6,6 +6,8 @@ const {
   handleGetMessage,
   handleUpdateMessage,
   handlePinMessage,
+  handleLikeMessage,
+  handleDeleteMessage,
 } = require("../../model/message/message");
 
 class MessageController {
@@ -70,6 +72,33 @@ class MessageController {
         throw createError.BadRequest({ msg: "Invalid message id" });
       } else {
         const result = await handlePinMessage(req.body);
+        return res.status(200).json(result);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async likeMessage(req, res, next) {
+    try {
+      if (!req.params.id) {
+        throw createError.BadRequest({ msg: "Message id is invalid" });
+      } else {
+        // console.log(req.params.id, req.user);
+        const result = await handleLikeMessage(req.params.id, req.user);
+        return res.status(200).json(result);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteMessage(req, res, next) {
+    try {
+      if (!req.params.id) {
+        throw createError.BadRequest({ msg: "Message id is invalid" });
+      } else {
+        const result = await handleDeleteMessage(req.params.id);
         return res.status(200).json(result);
       }
     } catch (error) {
