@@ -84,7 +84,6 @@ class MessageController {
       if (!req.params.id) {
         throw createError.BadRequest({ msg: "Message id is invalid" });
       } else {
-        // console.log(req.params.id, req.user);
         const result = await handleLikeMessage(req.params.id, req.user);
         return res.status(200).json(result);
       }

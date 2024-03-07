@@ -73,7 +73,8 @@ class ChatModel {
         ],
       })
         .populate({ path: "users", select: "_id name username p_i" })
-        .populate({ path: "lastMsg", select: "content" });
+        .populate({ path: "lastMsg", select: "content" })
+        .sort({ createdAt: -1 });
       return result;
     } catch (error) {
       throw createError.BadRequest(error.message);
@@ -242,7 +243,11 @@ class ChatModel {
   async handleGetGroupChats(userId, page, limit) {
     try {
       const groups = await Chat.find({
-        $and: [{ creator: { $ne: userId } }, { users: { $ne: userId } }],
+        $and: [
+          { isGroup: true },
+          { creator: { $ne: userId } },
+          { users: { $ne: userId } },
+        ],
       })
         .populate({ path: "creator", select: "_id name username p_i" })
         .limit(limit)

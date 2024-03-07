@@ -75,11 +75,11 @@ io.on("connection", (socket) => {
 
   socket.on("setup", (user) => {
     socket.join(user._id);
+    console.log("user id", user._id);
     socket.emit("connection");
   });
 
   socket.on("join chat", (room) => {
-    // console.log("Joined room ID:", room);
     socket.join(room.message);
   });
 
@@ -93,8 +93,9 @@ io.on("connection", (socket) => {
     socket.to(obj.creator).emit("received new join request", obj);
   });
 
-  socket.on("new message", (message) => {
-    console.log("message:", message);
+  socket.on("new message", (data) => {
+    socket.emit("send new message", data);
+    socket.to(data.chat).emit("received new message", data);
   });
 
   socket.on("pinned message", (data) => {
@@ -113,6 +114,16 @@ io.on("connection", (socket) => {
 
   socket.on("like message", (data) => {
     socket.to(data.chat).emit("sent liked message", data);
+  });
+
+  socket.on("new chat", (data) => {
+    console.log(data);
+  });
+
+  socket.on("new single chat", (data) => {
+    for (let i = 0; i < data.users.length; i++) {
+      socket.emit("sent new single chat request", data);
+    }
   });
 });
 
