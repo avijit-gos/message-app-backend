@@ -32,6 +32,10 @@ class MessageModel {
       });
       const result = await newMessage.save();
       await result.populate({ path: "user", select: "_id name p_i" });
+
+      await Chat.findByIdAndUpdate(id, {
+        $set: { lastMsg: body.message.trim() ? encryptMessageData : "" },
+      });
       return result;
     } catch (error) {
       throw createError.BadRequest(error.message);

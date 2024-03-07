@@ -13,6 +13,10 @@ const MessageSchema = mongoose.Schema(
     likes: [{ type: mongoose.Types.ObjectId, ref: "User" }],
     book: [{ type: mongoose.Types.ObjectId, ref: "User" }],
     pin: { type: Boolean, default: false },
+    replyTo: {
+      isReply: { type: Boolean, default: false },
+      messageId: { type: mongoose.Types.ObjectId, ref: "Message" },
+    },
   },
   { timestamps: true }
 );
