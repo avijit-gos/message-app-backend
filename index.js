@@ -73,10 +73,13 @@ const io = require("socket.io")(server, {
 io.on("connection", (socket) => {
   console.log("Connected with socket.io");
 
-  socket.on("setup", (user) => {
-    socket.join(user._id);
-    console.log("user id", user._id);
+  socket.on("setup", () => {
     socket.emit("connection");
+  });
+
+  socket.on("join user room", (userId) => {
+    socket.join(userId);
+    console.log("join user room", userId);
   });
 
   socket.on("join chat", (room) => {
@@ -123,6 +126,14 @@ io.on("connection", (socket) => {
   socket.on("new single chat", (data) => {
     for (let i = 0; i < data.users.length; i++) {
       socket.emit("sent new single chat request", data);
+    }
+  });
+
+  socket.on("block user", (data) => {
+    for (let i = 0; i < data.updateData.users.length; i++) {
+      const userId = data.updateData.users[i];
+      console.log("User:", userId);
+      socket.to(userId).emit("send block chat", data);
     }
   });
 });

@@ -17,11 +17,9 @@ const ChatSchema = mongoose.Schema(
     block: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     pending: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     lastMsg: { type: String, trim: true, default: "" },
-    privacy: {
-      msg: { type: String, default: "all" },
-      join: { type: String, default: "all" },
-      view_mem: { type: String, default: "all" },
-      view_grp_details: { type: String, default: "all" },
+    blocked: {
+      isBlocked: { type: Boolean, default: false }, // this is only valid for single chat
+      blockedBy: { type: Array },
     },
   },
   { timestamps: true }
