@@ -1,0 +1,8 @@
+DB_URL = mongodb+srv://avijit:avijit@cluster0.khmhoss.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+SECRET_KEY = my_chat_app_secret_credentials
+
+# CLOUDINARY
+CLOUD_NAME = dodc8z1zk
+API_KEY = 711843686395988
+API_SECRET = _0FabogEAHpmg6NFRCT00niu2EI
+# API_ENV_VAR = CLOUDINARY_URL=cloudinary://711843686395988:_0FabogEAHpmg6NFRCT00niu2EI@dodc8z1zk

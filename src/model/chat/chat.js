@@ -228,12 +228,17 @@ class ChatModel {
 
   async handleDeleteGroup(groupId, userId) {
     try {
-      const group = await Chat.findById(groupId).select("creator");
-      if (group.creator.toString() !== userId) {
-        throw createError.BadRequest({ msg: "Invalid creator" });
+      const group = await Chat.findById(groupId).select("creator isGroup");
+      if (group.isGroup) {
+        if (group.creator.toString() !== userId) {
+          throw createError.BadRequest({ msg: "Invalid creator" });
+        } else {
+          const result = await Chat.findByIdAndDelete(groupId);
+          return { msg: "Group has been deleted", chat: result };
+        }
       } else {
         const result = await Chat.findByIdAndDelete(groupId);
-        return { msg: "Group has been deleted", chat: result };
+        return { msg: "Chat has been deleted", chat: result };
       }
     } catch (error) {
       throw createError.BadRequest(error.message);
@@ -364,6 +369,35 @@ class ChatModel {
         p_i: 1,
       });
       return users;
+    } catch (error) {
+      throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleBlockSingleChat(id, userId) {
+    try {
+      const result = await Chat.findById(id).select("blocked");
+      if (result.blocked.isBlocked) {
+        const updateData = await Chat.findByIdAndUpdate(
+          id,
+          {
+            $set: { "blocked.isBlocked": false },
+            $pull: { "blocked.blockedBy": userId },
+          },
+          { new: true }
+        );
+        return { msg: "Successfully unblocked this user", updateData };
+      } else {
+        const updateData = await Chat.findByIdAndUpdate(
+          id,
+          {
+            $set: { "blocked.isBlocked": true },
+            $addToSet: { "blocked.blockedBy": userId },
+          },
+          { new: true }
+        );
+        return { msg: "Successfully blocked this user", updateData };
+      }
     } catch (error) {
       throw createError.BadRequest(error.message);
     }

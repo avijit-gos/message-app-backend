@@ -20,6 +20,7 @@ const {
   handleAddAdmin,
   handleViewsUsers,
   handleGetPendingList,
+  handleBlockSingleChat,
 } = require("../../model/chat/chat");
 
 class ChatController {
@@ -203,6 +204,7 @@ class ChatController {
       if (!req.params.id) {
         throw createError.BadRequest("Group id is invalid");
       } else {
+        console.log("Came here");
         const result = await handleDeleteGroup(req.params.id, req.user._id);
         return res.status(200).json(result);
       }
@@ -299,6 +301,19 @@ class ChatController {
         const page = req.query.page || 1;
         const limit = req.query.limit || 10;
         const result = await handleGetPendingList(req.params.id, page, limit);
+        return res.status(200).json(result);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async blockSingleChat(req, res, next) {
+    try {
+      if (!req.params.id) {
+        throw createError.BadRequest({ msg: "Invalid chat id" });
+      } else {
+        const result = await handleBlockSingleChat(req.params.id, req.user._id);
         return res.status(200).json(result);
       }
     } catch (error) {

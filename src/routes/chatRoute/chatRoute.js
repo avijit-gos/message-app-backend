@@ -21,6 +21,7 @@ const {
   addAdmin,
   viewUsers,
   getPendingList,
+  blockSingleChat,
 } = require("../../controller/chatController/chatController");
 const Authentication = require("../../middleware/authentication");
 const {
@@ -77,4 +78,5 @@ router.get("/members/:id", Authentication, getMembers);
 router.put("/add/admin/:id", Authentication, addAdmin);
 router.get("/list-users/:id", Authentication, viewUsers);
 router.get("/pending/:id", Authentication, getPendingList);
+router.put("/block/singleChat/:id", Authentication, blockSingleChat);
 module.exports = router;
