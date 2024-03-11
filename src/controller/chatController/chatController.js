@@ -204,6 +204,7 @@ class ChatController {
       if (!req.params.id) {
         throw createError.BadRequest("Group id is invalid");
       } else {
+        console.log("Came here");
         const result = await handleDeleteGroup(req.params.id, req.user._id);
         return res.status(200).json(result);
       }
