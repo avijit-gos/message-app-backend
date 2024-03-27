@@ -40,6 +40,8 @@ app.use("/api/chat", require("./src/routes/chatRoute/chatRoute"));
 app.use("/api/channel", require("./src/routes/channelRoute/channelRoute"));
 // message route
 app.use("/api/message", require("./src/routes/messageRoute/messageRoute"));
+// timeline route
+app.use("/api/timeline", require("./src/routes/timeline/timelineRoute"));
 
 app.use(async (req, res, next) => {
   next(createError.NotFound("Page not found"));

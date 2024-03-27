@@ -1,7 +1,7 @@
 /** @format */
 const path = require("node:path");
 // validation.js
-const { validationResult, body, query } = require("express-validator");
+const { validationResult, body, query, param } = require("express-validator");
 const createError = require("http-errors");
 const mongoose = require("mongoose");
 
@@ -115,6 +115,23 @@ exports.validateGroupNameInput = [
 
 exports.validateGroupBioInput = [
   body("bio", { msg: "Group bio is needed" }).trim().isLength({ min: 3 }),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      throw createError.Conflict({ errors: errors.array()[0] });
+    }
+    next(); // Call the next middleware if validation passes
+  },
+];
+
+exports.validateMongooseId = [
+  param("id").custom((value) => {
+    if (!mongoose.Types.ObjectId.isValid(value)) {
+      throw new Error("Invalid ObjectId");
+    }
+    return true;
+  }),
 
   (req, res, next) => {
     const errors = validationResult(req);

@@ -21,6 +21,10 @@ const ChatSchema = mongoose.Schema(
       isBlocked: { type: Boolean, default: false }, // this is only valid for single chat
       blockedBy: { type: Array },
     },
+    privacy: {
+      timeline_p: { type: String, default: "all" },
+      message_p: { type: String, default: "all" },
+    },
   },
   { timestamps: true }
 );

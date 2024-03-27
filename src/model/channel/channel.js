@@ -4,6 +4,7 @@ const createError = require("http-errors");
 const Channel = require("../../schema/channel/channelSchema");
 const { default: mongoose } = require("mongoose");
 const { uploadImage } = require("../../helper/helper");
+const User = require("../../schema/user/userSchema");
 
 class ChannelModel {
   constructor() {}
@@ -15,7 +16,7 @@ class ChannelModel {
         name: body.name,
         creator: user._id,
         bio: body.bio,
-        type: body.type,
+        cat: body.type,
       });
       const channelData = await newChannel.save();
       return { msg: "New channel has been created", channel: channelData };
@@ -42,9 +43,22 @@ class ChannelModel {
     }
   }
 
-  async handleGetAllChannels(page, limit, sortType, user) {
+  async handleGetChannel(id) {
     try {
-      let result = await Channel.find({ type: sortType })
+      const result = await Channel.findById(id).populate({
+        path: "creator",
+        select: "_id, name p_i",
+      });
+      return result;
+    } catch (error) {
+      throw createError.BadRequest({ msg: error.message });
+    }
+  }
+
+  async handleGetAllChannels(page, limit, sortType) {
+    try {
+      console.log("Came here", sortType);
+      let result = await Channel.find({ cat: sortType })
         .limit(limit)
         .skip(limit * (page - 1))
         .sort({ createdAt: -1 });
@@ -109,6 +123,25 @@ class ChannelModel {
       return { msg: "Channel has been deleted", channel };
     } catch (error) {
       throw createError.BadRequest(error.message);
+    }
+  }
+
+  async handleGetFollowers(id, page, limit) {
+    try {
+      const channel = await Channel.findById(id).select("followers");
+      const members = channel.followers;
+      const startIndex = limit * (page - 1);
+      const lastIndex = limit * page;
+      const temp = members.splice(startIndex, lastIndex);
+      const users = await User.find({ _id: { $in: temp } }).select({
+        name: 1,
+        _id: 1,
+        username: 1,
+        p_i: 1,
+      });
+      return users;
+    } catch (error) {
+      throw createError.BadRequest(error);
     }
   }
 }

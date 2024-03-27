@@ -5,6 +5,7 @@ const Chat = require("../../schema/chat/chatSchema");
 const User = require("../../schema/user/userSchema");
 const { default: mongoose } = require("mongoose");
 const { uploadImage } = require("../../helper/helper");
+const Timeline = require("../../schema/Timeline/TimelineSchema");
 
 class ChatModel {
   constructor() {}
@@ -57,6 +58,14 @@ class ChatModel {
         path: "creator",
         select: "_id name p_i username",
       });
+
+      // timeline
+      const timelineData = Timeline({
+        _id: new mongoose.Types.ObjectId(),
+        cat: 1,
+        chat: groupChat._id,
+      });
+      await timelineData.save();
       return { msg: "New group has been created", chat: result };
     } catch (error) {
       console.log(error);
@@ -125,6 +134,14 @@ class ChatModel {
         { [key]: value },
         { new: true }
       );
+
+      // timeline
+      const timelineData = Timeline({
+        _id: new mongoose.Types.ObjectId(),
+        cat: key === "name" ? 3 : 4,
+        chat: id,
+      });
+      await timelineData.save();
       return { msg: `Group ${key} has been updated.`, group: result };
     } catch (error) {
       throw createError.BadRequest(error.message);
@@ -140,6 +157,13 @@ class ChatModel {
         { $set: { p_i: imageURL } },
         { new: true }
       );
+      // timeline
+      const timelineData = Timeline({
+        _id: new mongoose.Types.ObjectId(),
+        cat: 2,
+        chat: id,
+      });
+      await timelineData.save();
       return { msg: "Profile image successfully updated", result };
     } catch (error) {
       throw createError.BadRequest(error);
@@ -179,6 +203,16 @@ class ChatModel {
           { $addToSet: { users: userId } },
           { new: true }
         );
+
+        // timeline
+        const timelineData = Timeline({
+          _id: new mongoose.Types.ObjectId(),
+          cat: 5,
+          chat: groupId,
+          user: userId,
+        });
+        await timelineData.save();
+
         return { msg: "Joining request has been accepted", chat: result };
       }
       return { msg: "Joining request has not been accepted" };
@@ -315,6 +349,15 @@ class ChatModel {
         },
         { new: true }
       );
+      if (!isAdmin) {
+        const timelineData = Timeline({
+          _id: new mongoose.Types.ObjectId(),
+          cat: 6,
+          chat: chatId,
+          user: userId,
+        });
+        await timelineData.save();
+      }
       return {
         msg: isAdmin ? "Remove from  admin" : "Add as an admin",
         chat: update,

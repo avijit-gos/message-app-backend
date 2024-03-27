@@ -30,15 +30,9 @@ const {
   validateGroupNameInput,
   validateGroupBioInput,
   validateImage,
+  validateMongooseId,
 } = require("../../validator/validator");
-/***
- * 
- * 
 
-
-
- */
-// routes
 router.get("/sorted-groups", Authentication, getSortedGroups);
 router.post("/", Authentication, validatesingleChatInput, createChat);
 router.post(
@@ -68,15 +62,40 @@ router.put(
   validateImage,
   updateGroupImage
 );
-router.put("/join-request/:id", Authentication, joinGroupRequest);
-router.put("/accept-join-request/:id", Authentication, acceptJoinRequest);
-router.put("/remove-group/:id", Authentication, removeGroup);
-router.put("/leave-group/:id", Authentication, leaveGroup);
-router.delete("/delete-group/:id", Authentication, deleteGroup);
+router.put(
+  "/join-request/:id",
+  validateMongooseId,
+  Authentication,
+  joinGroupRequest
+);
+router.put(
+  "/accept-join-request/:id",
+  validateMongooseId,
+  Authentication,
+  acceptJoinRequest
+);
+router.put(
+  "/remove-group/:id",
+  validateMongooseId,
+  Authentication,
+  removeGroup
+);
+router.put("/leave-group/:id", validateMongooseId, Authentication, leaveGroup);
+router.delete(
+  "/delete-group/:id",
+  validateMongooseId,
+  Authentication,
+  deleteGroup
+);
 router.put("/my-groups", Authentication, getGroupChats);
 router.get("/members/:id", Authentication, getMembers);
-router.put("/add/admin/:id", Authentication, addAdmin);
-router.get("/list-users/:id", Authentication, viewUsers);
-router.get("/pending/:id", Authentication, getPendingList);
-router.put("/block/singleChat/:id", Authentication, blockSingleChat);
+router.put("/add/admin/:id", validateMongooseId, Authentication, addAdmin);
+router.get("/list-users/:id", validateMongooseId, Authentication, viewUsers);
+router.get("/pending/:id", validateMongooseId, Authentication, getPendingList);
+router.put(
+  "/block/singleChat/:id",
+  validateMongooseId,
+  Authentication,
+  blockSingleChat
+);
 module.exports = router;
